@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class ClientHandler {
-    private static final String AUTH_CMD_PREFIX = "/chat/auth";
+    private static final String AUTH_CMD_PREFIX = "/chatauth";
     private static final String AUTHok_CMD_PREFIX = "/authok";
     private static final String AUTHerr_CMD_PREFIX = "/autherr";
     private static final String PRIVATE_MSG_PREFIX = "/private";
@@ -41,6 +41,7 @@ public class ClientHandler {
     }
 
     public void handle() throws IOException {
+        System.out.println("Клиент подключился...");
         out =new DataOutputStream(clientSocket.getOutputStream());
         in = new DataInputStream((clientSocket.getInputStream()));
         threadInMsg();
@@ -70,10 +71,10 @@ public class ClientHandler {
                 while (true){
                     String msg = in.readUTF();
                     String[] arrWord = parse(msg);
-                    if(!auth(arrWord)){
-                        continue;
-                    }
-                    sendMsg(arrWord);
+//                    if(!auth(arrWord)){
+//                        continue;
+//                    }
+                    choiseToDo(arrWord);
                     //
                     System.out.println("Сообщение от клиента: " + msg);
                 }
@@ -85,8 +86,33 @@ public class ClientHandler {
         threadIN.start();
     }
 
+    private void authentication() throws IOException {
+        String message = in.readUTF();
+        while (true){
+            if (message.startsWith(AUTH_CMD_PREFIX)){
+                String[] parts = message.split("\\s+", 3);
+                String login = parts[1];
+                String password = parts[2];
+
+                Auth auth = myServer.getAuth();
+                String nick = auth.getNick(login, password);
+                if (nick != null){
+                    out.writeUTF(String.format("%s %s", AUTHok_CMD_PREFIX, nick));
+                }
+            }
+        }
+    }
+
+    private void choiseToDo(String[] arrWord) throws IOException {
+        if(arrWord[0].startsWith(ALL_MSG_PREFIX)){
+            sendMsg(arrWord);
+            System.out.println(String.format("%s: %s", arrWord[1], arrWord[2]));
+        }
+    }
+
     private String[] parse(String msg) {
         return msg.split("\\s+", 3);
+
     }
 
     private boolean auth(String[] arr) throws IOException {
@@ -96,8 +122,13 @@ public class ClientHandler {
         if (nick != null){
             clientsInChat.add(nick);
             msgInfoInput(nick);
+            sendMsgAuthOk(nick);
         }
         return false;
+    }
+
+    private void sendMsgAuthOk(String nick) throws IOException {
+        out.writeUTF(String.format("%s %s", AUTHok_CMD_PREFIX, nick, "Авторизация"));
     }
 
     public void msgInfoInput(String nick) throws IOException {
