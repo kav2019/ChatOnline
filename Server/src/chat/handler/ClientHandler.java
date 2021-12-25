@@ -97,6 +97,7 @@ public class ClientHandler {
                 Auth auth = myServer.getAuth();
                 String nick = auth.getNick(login, password);
                 if (nick != null){
+                    System.out.println("Отправляем клиенту " + nick);
                     out.writeUTF(String.format("%s %s", AUTHok_CMD_PREFIX, nick));
                 }
             }

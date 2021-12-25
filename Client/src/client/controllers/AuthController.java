@@ -7,6 +7,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
+import java.io.IOException;
+
 public class AuthController {
 
     private Worker worker;
@@ -25,8 +27,13 @@ public class AuthController {
         String login = loginField.getText();
         String password = passwordField.getText();
         if(!login.isBlank() || !password.isBlank()){
-            Worker.setLogin(login);
-            Worker.setPassword(password);
+            worker.setLogin(login);
+            worker.setPassword(password);
+            try {
+                worker.isAuth();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
         }
     }

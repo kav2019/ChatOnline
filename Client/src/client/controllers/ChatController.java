@@ -54,6 +54,11 @@ public class ChatController {
         clientToList();
     }
 
+    public void setNick(String nick){
+        labelNick.setText(worker.getNick());
+    }
+
+
     @FXML
     public void sendBotoon(){
         String msg = imputField.getText();

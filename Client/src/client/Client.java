@@ -30,7 +30,7 @@ public class Client extends Application{
         worker.setClient(this);
 
         openAuthWindow();
-        openChatWindow();
+        createChatWindow();
 //        FXMLLoader loader = new FXMLLoader();
 //        loader.setLocation(Client.class.getResource("view/chat-view.fxml"));
 //        //       Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
@@ -53,33 +53,15 @@ public class Client extends Application{
 
     }
 
-    public void openChatWindow() throws IOException {
-        FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(Client.class.getResource("views/chat-view.fxml"));
-
-        Parent root = loader.load();
-
-        stage.setTitle("Messenger");
-        stage.setScene(new Scene(root));
-
-        chatController = loader.getController();
-        System.out.println(chatController);
-        chatController.addOne();
-        worker.setController(chatController);
-        chatController.setWorker(worker);
-
-        stage.setOnCloseRequest(windowEvent -> worker.close());
-    }
-
     private void openAuthWindow() throws IOException {
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(Client.class.getResource("view/auth-view.fxml"));
-        Parent root =loader.load();
+        Parent rootAuth =loader.load();
         authStage = new Stage();
         authStage.setTitle("Авторизация");
         authStage.initModality(Modality.WINDOW_MODAL);
         authStage.initOwner(stage);
-        Scene scene = new Scene(root);
+        Scene scene = new Scene(rootAuth);
         authStage.setScene(scene);
         authStage.show();
 
@@ -87,6 +69,35 @@ public class Client extends Application{
         authController.setWorker(worker);
         authController.setClient(this);
         authStage.setOnCloseRequest(windowEvent -> worker.close());
+    }
+
+    public void createChatWindow() throws IOException {
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(getClass().getResource("view/chat-view.fxml"));
+//
+//
+        Parent root = loader.load();
+
+//        Parent root = FXMLLoader.load(getClass().getResource("view/chat-view.fxml"));
+
+        stage.setTitle("Messenger");
+        stage.setScene(new Scene(root));
+
+        chatController = loader.getController();
+        System.out.println(chatController);
+//        chatController.addOne();
+        worker.setController(chatController);
+        chatController.setWorker(worker);
+
+        stage.setOnCloseRequest(windowEvent -> worker.close());
+    }
+
+    public void openChatWindow(){
+        authStage.close();
+        stage.show();
+
+        stage.setAlwaysOnTop(true);
+        worker.threadWaitMsg();
     }
 
     public void sendMsg(String massage) throws IOException {

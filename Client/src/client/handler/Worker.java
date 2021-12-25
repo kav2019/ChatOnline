@@ -49,20 +49,17 @@ public class Worker {
             socket = new Socket("localhost", SERVER_SOCKET);
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
-            threadWaitMsg();
+//            threadWaitMsg();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void threadWaitMsg() {
+    public void threadWaitMsg() {
         Thread thread = new Thread( () -> {
             while (true){
                 try {
                     String message = in.readUTF();
-                    if(message.startsWith(AUTHok_CMD_PREFIX)){
-                        setNick(message);
-                    }
                     parseMsg(message);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -75,11 +72,8 @@ public class Worker {
     private void setNick(String message) {
         String[] arrWord = message.split("\\s+", 2);
         nick = arrWord[1];
-        try {
-            client.openChatWindow();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        controller.setNick(nick);
+        client.openChatWindow();
 
     }
 
@@ -104,6 +98,19 @@ public class Worker {
     public void isAuth() throws IOException {
         String msgAuth = String.format("%s %s %s",AUTH_CMD_PREFIX, login, password);
         sendMsg(msgAuth);
+        waitAuth();
+    }
+
+    private void waitAuth() {
+        try {
+            String authMsg = in.readUTF();
+            if(authMsg.startsWith(AUTHok_CMD_PREFIX)){
+                String[] parts = authMsg.split("\\s+", 2);
+                nick = parts[1];
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void sendMsg(String massage) throws IOException {
