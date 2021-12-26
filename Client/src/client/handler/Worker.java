@@ -87,6 +87,9 @@ public class Worker {
             nick = parts[1];
         }
         else if (parts[0].startsWith(ALL_MSG_PREFIX)){
+            if(parts[1].equals(nick)){
+                return;
+            }
             controller.addMsgToChat(parts[1], parts[2]);
         }
     }
@@ -107,6 +110,7 @@ public class Worker {
             if(authMsg.startsWith(AUTHok_CMD_PREFIX)){
                 String[] parts = authMsg.split("\\s+", 2);
                 nick = parts[1];
+
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -114,9 +118,14 @@ public class Worker {
     }
 
     public void sendMsg(String massage) throws IOException {
-        System.out.println("worker письмо получил");
-        out.writeUTF(massage);
-        System.out.println("worker письмо отправил");
+        System.out.println("worker письмо получил:" + massage);
+        if (nick == null){
+            out.writeUTF(massage);
+            System.out.println("worker письмо отправил:" + massage);
+            return;
+        }
+        out.writeUTF(String.format("%s %s %s", ALL_MSG_PREFIX, nick, massage));
+        System.out.println("worker письмо отправил:" + String.format("%s %s %s", ALL_MSG_PREFIX, nick, massage));
 
     }
 

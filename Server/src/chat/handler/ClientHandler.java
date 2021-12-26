@@ -33,6 +33,7 @@ public class ClientHandler {
     private Auth auth;
     private static List<String> clientsInChat;
     private boolean isAuth = false;
+    private String nick;
 
 
     public ClientHandler(MyServer myServer, Socket clientSocket) {
@@ -58,6 +59,7 @@ public class ClientHandler {
             try {
                 while (true){
                     String msg = in.readUTF();
+                    System.out.println("Сообщение от клиента: " + msg);
                     String[] arrWord = parse(msg);
 //                    if(!auth(arrWord)){
 //                        continue;
@@ -67,7 +69,6 @@ public class ClientHandler {
                         continue;
                     }
                     //
-                    System.out.println("Сообщение от клиента: " + msg);
                 }
 
             } catch (IOException e) {
@@ -82,15 +83,19 @@ public class ClientHandler {
         String nick = auth.getNick(message[1], message[2]);
         System.out.println("АВТОРИЗАЦИЯ!!!!");
         if (nick != null){
+            this.nick = nick;
+            clientsInChat.add(nick);
             out.writeUTF(String.format("%s %s", AUTHok_CMD_PREFIX, nick));
             System.out.println("АВТОРИЗОВАЛСЯ!!!");
             isAuth = true;
+            myServer.addClientsList(this);
         }
     }
 
     private void choiseToDo(String[] arrWord) throws IOException {
         if(arrWord[0].startsWith(ALL_MSG_PREFIX)){
             sendMsg(arrWord);
+            myServer.broadcastMsg(arrWord, this);
             System.out.println(String.format("%s: %s", arrWord[1], arrWord[2]));
         }
         else if(arrWord[0].startsWith(AUTH_CMD_PREFIX)){
@@ -107,6 +112,7 @@ public class ClientHandler {
 
     public void sendMsg(String[] arr) throws IOException {
         out.writeUTF(String.format("%s %s %s", ALL_MSG_PREFIX, arr[1], arr[2]));
+        System.out.println(String.format("Отправил всем сообщение от %s: %s", arr[1], arr[2]));
     }
 
     //    private boolean auth(String[] arr) throws IOException {

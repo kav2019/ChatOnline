@@ -18,7 +18,9 @@ public class Client extends Application{
     private Stage stage;
     private Stage authStage;
 
-    private static final String AUTH_CMD_PREFIX = "/chatauth";
+
+
+//    private static final String AUTH_CMD_PREFIX = "/chatauth";
 
 
 
@@ -88,6 +90,7 @@ public class Client extends Application{
 //        chatController.addOne();
         worker.setController(chatController);
         chatController.setWorker(worker);
+//        chatController.setNick(worker.);
 
         stage.setOnCloseRequest(windowEvent -> worker.close());
     }
@@ -100,9 +103,11 @@ public class Client extends Application{
         worker.threadWaitMsg();
     }
 
-    public void sendMsg(String massage) throws IOException {
-        worker.sendMsg(massage);
-    }
+//    public void sendMsg(String massage) throws IOException {
+//        worker.sendMsg(massage);
+//    }
+
+
 
     public static void main(String[] args) {
         launch(args);
