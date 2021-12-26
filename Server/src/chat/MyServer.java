@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MyServer {
@@ -56,6 +57,7 @@ public class MyServer {
     }
 
     public void broadcastMsg(String[] msg, ClientHandler sender){
+        System.out.println(Arrays.toString(msg));
         for(ClientHandler client : clients){
             if(client == sender){
                 continue;
@@ -64,6 +66,26 @@ public class MyServer {
                 client.sendMsg(msg);
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+
+        }
+    }
+
+
+    // кто кому что
+    public void broadcastPrivateMsg(String[] msg, ClientHandler sender){
+        System.out.println("MyServer - broadcastPrivate" +Arrays.toString(msg));
+        System.out.println("\n\n " + "Клиенты которые подключены: " + clients.toString() + "\n\n");
+        for(ClientHandler poluchatel : clients){
+            String nameGeter ="/" + poluchatel.getNick();
+            System.out.println(nameGeter + " прибавление к нику - /");
+            if(nameGeter.equals(msg[2])){
+                try {
+                    System.out.println("Нашли нужного клиента - " + nameGeter);
+                    poluchatel.sendMsg(msg);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

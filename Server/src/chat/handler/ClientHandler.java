@@ -59,7 +59,7 @@ public class ClientHandler {
             try {
                 while (true){
                     String msg = in.readUTF();
-                    System.out.println("Сообщение от клиента: " + msg);
+                    System.out.println("Сообщение от клиента При создании потока: " + msg);
                     String[] arrWord = parse(msg);
 //                    if(!auth(arrWord)){
 //                        continue;
@@ -78,6 +78,10 @@ public class ClientHandler {
         threadIN.start();
     }
 
+    public String getNick() {
+        return nick;
+    }
+
     private void authentication(String[] message) throws IOException {
         Auth auth = myServer.getAuth();
         String nick = auth.getNick(message[1], message[2]);
@@ -94,25 +98,50 @@ public class ClientHandler {
 
     private void choiseToDo(String[] arrWord) throws IOException {
         if(arrWord[0].startsWith(ALL_MSG_PREFIX)){
-            sendMsg(arrWord);
+//            sendMsg(arrWord);
             myServer.broadcastMsg(arrWord, this);
             System.out.println(String.format("%s: %s", arrWord[1], arrWord[2]));
         }
         else if(arrWord[0].startsWith(AUTH_CMD_PREFIX)){
             authentication(arrWord);
         }
+        else if (arrWord[0].equals(PRIVATE_MSG_PREFIX)){
+//            sendMsg(arrWord);
+            myServer.broadcastPrivateMsg(arrWord, this);
+            System.out.println(String.format("В clientHandler - choiseToDo от %s к %s: %s", arrWord[1], arrWord[2], arrWord[3]));
+        }
+
+        // кто кому что
     }
 
     private String[] parse(String msg) {
+        if(msg.startsWith(PRIVATE_MSG_PREFIX)){
+//            privateSendMsg(msg);
+            return msg.split("\\s+", 4);
+        }
         return msg.split("\\s+", 3);
 
     }
 
+    private void privateSendMsg(String msg) {
+        String[] arrWord = msg.split("\\s+", 4);
+        try {
+            sendMsg(arrWord);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    // кто кому что
 
     public void sendMsg(String[] arr) throws IOException {
-        out.writeUTF(String.format("%s %s %s", ALL_MSG_PREFIX, arr[1], arr[2]));
-        System.out.println(String.format("Отправил всем сообщение от %s: %s", arr[1], arr[2]));
+        if (arr[0].equals(ALL_MSG_PREFIX)) {
+            out.writeUTF(String.format("%s %s %s", ALL_MSG_PREFIX, arr[1], arr[2]));
+            System.out.println(String.format("Отправил ВСЕМ сообщение от %s: %s", arr[1], arr[2]));
+        }else if (arr[0].equals(PRIVATE_MSG_PREFIX)){
+            out.writeUTF(String.format("%s %s %s %s", PRIVATE_MSG_PREFIX, arr[1], arr[2], arr[3]));
+            System.out.println(String.format("Отправил ПРИВАТНОЕ сообщение от %s: %s", arr[1], arr[2]));
+        }
     }
 
     //    private boolean auth(String[] arr) throws IOException {

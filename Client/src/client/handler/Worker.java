@@ -7,6 +7,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Arrays;
 
 public class Worker {
 
@@ -81,6 +82,9 @@ public class Worker {
         return nick;
     }
 
+
+
+    // кто кому что
     private void parseMsg(String message) {
         String[] parts = message.split("\\s+", 3);
         if (parts[0].startsWith(AUTHok_CMD_PREFIX)){
@@ -92,6 +96,12 @@ public class Worker {
             }
             controller.addMsgToChat(parts[1], parts[2]);
         }
+        else if(parts[0].startsWith(PRIVATE_MSG_PREFIX)){
+            String[] partsPrivate = message.split("\\s+", 4);
+            String one = String.format("%s (личное сообщение): ",partsPrivate[1]);
+            controller.addMsgToChat(one, partsPrivate[3]);
+        }
+
     }
 
     public Socket getSocket() {
@@ -122,6 +132,16 @@ public class Worker {
         if (nick == null){
             out.writeUTF(massage);
             System.out.println("worker письмо отправил:" + massage);
+            return;
+        }
+        if(massage.startsWith("/")){
+            System.out.println("Worker Получил личное");
+            String[] arrWord = massage.split("\\s+", 2);
+            System.out.println("Разбитое письмо в workere: " + Arrays.toString(arrWord));
+            String geterNick = arrWord[0];
+            out.writeUTF(String.format("%s %s %s %s", PRIVATE_MSG_PREFIX, nick, geterNick, arrWord[1]));
+
+            System.out.println("worker письмо отправил ЛИЧНОЕ:" + String.format("%s %s %s %s", PRIVATE_MSG_PREFIX, nick, geterNick, arrWord[1]));
             return;
         }
         out.writeUTF(String.format("%s %s %s", ALL_MSG_PREFIX, nick, massage));

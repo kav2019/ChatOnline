@@ -99,6 +99,7 @@ public class Client extends Application{
         authStage.close();
         stage.show();
 
+        chatController.setNick(worker.getNick());
         stage.setAlwaysOnTop(true);
         worker.threadWaitMsg();
     }
