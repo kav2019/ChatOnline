@@ -24,7 +24,7 @@ public class Worker {
     private DataOutputStream out;
     private static String login;
     private static String password;
-    private static String name;
+//    private static String name;
     public ChatController controller;
     private  String nick;
     private Client client;
@@ -69,13 +69,13 @@ public class Worker {
         thread.start();
     }
 
-    private void setNick(String message) {
-        String[] arrWord = message.split("\\s+", 2);
-        nick = arrWord[1];
-        controller.setNick(nick);
-        client.openChatWindow();
-
-    }
+//    private void setNick(String message) {
+//        String[] arrWord = message.split("\\s+", 2);
+//        nick = arrWord[1];
+//        controller.setNick(nick);
+//        client.openChatWindow();
+//
+//    }
 
     public String getNick() {
         return nick;
@@ -84,7 +84,7 @@ public class Worker {
     private void parseMsg(String message) {
         String[] parts = message.split("\\s+", 3);
         if (parts[0].startsWith(AUTHok_CMD_PREFIX)){
-            name = parts[1];
+            nick = parts[1];
         }
         else if (parts[0].startsWith(ALL_MSG_PREFIX)){
             controller.addMsgToChat(parts[1], parts[2]);
@@ -114,10 +114,6 @@ public class Worker {
     }
 
     public void sendMsg(String massage) throws IOException {
-        if (nick != null){
-            out.writeUTF(String.format("%s %s %s", ALL_MSG_PREFIX, nick, massage));
-            return;
-        }
         System.out.println("worker письмо получил");
         out.writeUTF(massage);
         System.out.println("worker письмо отправил");

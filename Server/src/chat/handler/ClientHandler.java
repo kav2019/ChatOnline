@@ -32,6 +32,7 @@ public class ClientHandler {
     private DataInputStream in;
     private Auth auth;
     private static List<String> clientsInChat;
+    private boolean isAuth = false;
 
 
     public ClientHandler(MyServer myServer, Socket clientSocket) {
@@ -50,7 +51,85 @@ public class ClientHandler {
 
     }
 
-//    private void threadOutMsg() {
+
+
+    private void threadInMsg() {
+        Thread threadIN = new Thread(() -> {
+            try {
+                while (true){
+                    String msg = in.readUTF();
+                    String[] arrWord = parse(msg);
+//                    if(!auth(arrWord)){
+//                        continue;
+//                    }
+                    choiseToDo(arrWord);
+                    if (!isAuth){
+                        continue;
+                    }
+                    //
+                    System.out.println("Сообщение от клиента: " + msg);
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        threadIN.start();
+    }
+
+    private void authentication(String[] message) throws IOException {
+        Auth auth = myServer.getAuth();
+        String nick = auth.getNick(message[1], message[2]);
+        System.out.println("АВТОРИЗАЦИЯ!!!!");
+        if (nick != null){
+            out.writeUTF(String.format("%s %s", AUTHok_CMD_PREFIX, nick));
+            System.out.println("АВТОРИЗОВАЛСЯ!!!");
+            isAuth = true;
+        }
+    }
+
+    private void choiseToDo(String[] arrWord) throws IOException {
+        if(arrWord[0].startsWith(ALL_MSG_PREFIX)){
+            sendMsg(arrWord);
+            System.out.println(String.format("%s: %s", arrWord[1], arrWord[2]));
+        }
+        else if(arrWord[0].startsWith(AUTH_CMD_PREFIX)){
+            authentication(arrWord);
+        }
+    }
+
+    private String[] parse(String msg) {
+        return msg.split("\\s+", 3);
+
+    }
+
+
+
+    public void sendMsg(String[] arr) throws IOException {
+        out.writeUTF(String.format("%s %s %s", ALL_MSG_PREFIX, arr[1], arr[2]));
+    }
+
+    //    private boolean auth(String[] arr) throws IOException {
+//        String login = arr[1];
+//        String password = arr[2];
+//        String nick = auth.getNick(login, password);
+//        if (nick != null){
+//            clientsInChat.add(nick);
+//            msgInfoInput(nick);
+//            sendMsgAuthOk(nick);
+//        }
+//        return false;
+//    }
+
+    //    private void sendMsgAuthOk(String nick) throws IOException {
+//        out.writeUTF(String.format("%s %s", AUTHok_CMD_PREFIX, nick, "Авторизация"));
+//    }
+//
+//    public void msgInfoInput(String nick) throws IOException {
+//        out.writeUTF(String.format(">>> %s подключился к чату", nick));
+//    }
+
+    //    private void threadOutMsg() {
 //        Thread threadOut = new Thread(() -> {
 //            Scanner scanner = new Scanner(System.in);
 //            while (true) {
@@ -64,79 +143,4 @@ public class ClientHandler {
 //        });
 //        threadOut.start();
 //    }
-
-    private void threadInMsg() {
-        Thread threadIN = new Thread(() -> {
-            try {
-                while (true){
-                    String msg = in.readUTF();
-                    String[] arrWord = parse(msg);
-//                    if(!auth(arrWord)){
-//                        continue;
-//                    }
-                    choiseToDo(arrWord);
-                    //
-                    System.out.println("Сообщение от клиента: " + msg);
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        threadIN.start();
-    }
-
-    private void authentication() throws IOException {
-        String message = in.readUTF();
-        while (true){
-            if (message.startsWith(AUTH_CMD_PREFIX)){
-                String[] parts = message.split("\\s+", 3);
-                String login = parts[1];
-                String password = parts[2];
-
-                Auth auth = myServer.getAuth();
-                String nick = auth.getNick(login, password);
-                if (nick != null){
-                    System.out.println("Отправляем клиенту " + nick);
-                    out.writeUTF(String.format("%s %s", AUTHok_CMD_PREFIX, nick));
-                }
-            }
-        }
-    }
-
-    private void choiseToDo(String[] arrWord) throws IOException {
-        if(arrWord[0].startsWith(ALL_MSG_PREFIX)){
-            sendMsg(arrWord);
-            System.out.println(String.format("%s: %s", arrWord[1], arrWord[2]));
-        }
-    }
-
-    private String[] parse(String msg) {
-        return msg.split("\\s+", 3);
-
-    }
-
-    private boolean auth(String[] arr) throws IOException {
-        String login = arr[1];
-        String password = arr[2];
-        String nick = auth.getNick(login, password);
-        if (nick != null){
-            clientsInChat.add(nick);
-            msgInfoInput(nick);
-            sendMsgAuthOk(nick);
-        }
-        return false;
-    }
-
-    private void sendMsgAuthOk(String nick) throws IOException {
-        out.writeUTF(String.format("%s %s", AUTHok_CMD_PREFIX, nick, "Авторизация"));
-    }
-
-    public void msgInfoInput(String nick) throws IOException {
-        out.writeUTF(String.format(">>> %s подключился к чату", nick));
-    }
-
-    public void sendMsg(String[] arr) throws IOException {
-        out.writeUTF(String.format("%s %s %s", ALL_MSG_PREFIX, arr[1], arr[2]));
-    }
 }

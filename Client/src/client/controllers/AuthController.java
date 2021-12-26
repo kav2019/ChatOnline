@@ -31,6 +31,9 @@ public class AuthController {
             worker.setPassword(password);
             try {
                 worker.isAuth();
+                if (worker.getNick() != null){
+                    client.openChatWindow();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
